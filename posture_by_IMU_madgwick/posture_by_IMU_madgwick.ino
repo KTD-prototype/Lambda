@@ -63,20 +63,21 @@
 // Use the LSM9DS1 class to create an object. [imu] can be
 // named anything, we'll refer to that throught the sketch.
 LSM9DS1 imu;
+Madgwick filter;
 
 ///////////////////////
 // Example I2C Setup //
 ///////////////////////
 // SDO_XM and SDO_G are both pulled high, so our addresses are:
-#define LSM9DS1_M 0x1E // Would be 0x1C if SDO_M is LOW
-#define LSM9DS1_AG  0x6B // Would be 0x6A if SDO_AG is LOW
+#define LSM9DS1_M 0x1C // Would be 0x1C if SDO_M is LOW
+#define LSM9DS1_AG  0x6A // Would be 0x6A if SDO_AG is LOW
 
 ////////////////////////////
 // Sketch Output Settings //
 ////////////////////////////
 #define PRINT_CALCULATED
 //#define PRINT_RAW
-#define PRINT_SPEED 250 // 250 ms between prints
+#define PRINT_SPEED 25 // 25 ms between prints
 static unsigned long lastPrint = 0; // Keep track of print time
 
 // Earth's magnetic field varies by location. Add or subtract
@@ -89,10 +90,11 @@ static unsigned long lastPrint = 0; // Keep track of print time
 // if this flag == 1, then execute initial process to calibrate gyro offset
 // define the number of sample to get data to calibrate
 int init_flag = 1;
+float accelX, accelY, accelZ, gyroX, gyroY, gyroZ, magX, magY, magZ, roll, pitch, heading;
 float offset_gx = 0;
 float offset_gy = 0;
 float offset_gz = 0;
-#define NUM_OF_SAMPLES_FOR_INIT 1000
+#define NUM_OF_SAMPLES_FOR_INIT 500
 
 void setup()
 {
@@ -105,6 +107,12 @@ void setup()
   imu.settings.device.commInterface = IMU_MODE_I2C;
   imu.settings.device.mAddress = LSM9DS1_M;
   imu.settings.device.agAddress = LSM9DS1_AG;
+
+
+  setupGyro();
+  setupAccel();
+  setupMag();
+
   // The above lines will only take effect AFTER calling
   // imu.begin(), which verifies communication with the IMU
   // and turns it on.
@@ -119,6 +127,7 @@ void setup()
     while (1)
       ;
   }
+  filter.begin(40);
 }
 
 void loop()
@@ -126,6 +135,8 @@ void loop()
   // initial process to subtract gyro offset from measured data
   if (init_flag == 1) {
     init_gyro_process();
+    Serial.println("finished initialization !");
+    Serial.println();
     init_flag = 0;
   }
 
@@ -137,9 +148,6 @@ void loop()
     // readGyro() function. When it exits, it'll update the
     // gx, gy, and gz variables with the most current data.
     imu.readGyro();
-    imu.gx -= offset_gx;
-    imu.gy -= offset_gy;
-    imu.gz -= offset_gy;
   }
 
   if ( imu.accelAvailable() )
@@ -158,21 +166,29 @@ void loop()
     imu.readMag();
   }
 
+  if ((lastPrint + PRINT_SPEED) < millis()) {
+    gyroX = imu.calcGyro(imu.gx - offset_gx);
+    gyroY = imu.calcGyro(imu.gy - offset_gy);
+    gyroZ = imu.calcGyro(imu.gz - offset_gz);
+    accelX = imu.calcAccel(imu.ax);
+    accelY = imu.calcAccel(imu.ay);
+    accelZ = imu.calcAccel(imu.az);
+    magX = imu.calcMag(imu.mx);
+    magY = imu.calcMag(imu.my);
+    magZ = imu.calcMag(imu.mz);
+    //    magX = imu.mx;
+    //    magY = imu.my;
+    //    magZ = imu.mz;
 
+    filter.update(gyroX, gyroY, gyroZ, accelX, accelY, accelZ, magX, magY, magZ);
 
-  if ((lastPrint + PRINT_SPEED) < millis())
-  {
-    printGyro();  // Print "G: gx, gy, gz"
-    printAccel(); // Print "A: ax, ay, az"
-    printMag();   // Print "M: mx, my, mz"
-    // Print the heading and orientation for fun!
-    // Call print attitude. The LSM9DS1's mag x and y
-    // axes are opposite to the accelerometer, so my, mx are
-    // substituted for each other.
-    printAttitude(imu.ax, imu.ay, imu.az,
-                  -imu.my, -imu.mx, imu.mz);
-    Serial.println();
+    roll = filter.getRoll();
+    pitch = filter.getPitch();
+    heading = filter.getYaw();
+
+    printPosture(roll, pitch, heading);
 
     lastPrint = millis(); // Update lastPrint time
+    //    Serial.println(lastPrint);
   }
 }

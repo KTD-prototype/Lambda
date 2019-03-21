@@ -67,8 +67,8 @@ LSM9DS1 imu;
 // Example I2C Setup //
 ///////////////////////
 // SDO_XM and SDO_G are both pulled high, so our addresses are:
-#define LSM9DS1_M 0x1E // Would be 0x1C if SDO_M is LOW
-#define LSM9DS1_AG  0x6B // Would be 0x6A if SDO_AG is LOW
+#define LSM9DS1_M 0x1C // Would be 0x1C if SDO_M is LOW
+#define LSM9DS1_AG  0x6A // Would be 0x6A if SDO_AG is LOW
 
 ////////////////////////////
 // Sketch Output Settings //
@@ -88,6 +88,7 @@ static unsigned long lastPrint = 0; // Keep track of print time
 // if this flag == 1, then execute initial process to calibrate gyro offset
 // define the number of sample to get data to calibrate
 int init_flag = 1;
+float gyroX, gyroY, gyroZ;
 float offset_gx = 0;
 float offset_gy = 0;
 float offset_gz = 0;
@@ -125,6 +126,8 @@ void loop()
   // initial process to subtract gyro offset from measured data
   if (init_flag == 1) {
     init_gyro_process();
+    Serial.println("finished initialization !");
+    Serial.println();
     init_flag = 0;
   }
 
@@ -136,9 +139,6 @@ void loop()
     // readGyro() function. When it exits, it'll update the
     // gx, gy, and gz variables with the most current data.
     imu.readGyro();
-    imu.gx -= offset_gx;
-    imu.gy -= offset_gy;
-    imu.gz -= offset_gy;
   }
 
   if ( imu.accelAvailable() )
@@ -170,6 +170,8 @@ void loop()
     // substituted for each other.
     printAttitude(imu.ax, imu.ay, imu.az,
                   -imu.my, -imu.mx, imu.mz);
+    Serial.println();
+    Serial.println(offset_gz);
     Serial.println();
 
     lastPrint = millis(); // Update lastPrint time

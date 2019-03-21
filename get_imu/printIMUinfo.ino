@@ -7,23 +7,44 @@ void printGyro()
   // If you want to print calculated values, you can use the
   // calcGyro helper function to convert a raw ADC value to
   // DPS. Give the function the value that you want to convert.
-  Serial.print(imu.calcGyro(imu.gx), 2);
+  //  gyroX = imu.gx;
+  //  gyroY = imu.gy;
+  //  gyroZ = imu.gz;
+  //  gyroX = gyroX - offset_gx;
+  //  gyroY = gyroY - offset_gy;
+  //  gyroZ = gyroZ - offset_gz;
+
+  //  Serial.print(imu.calcGyro(gyroX), 2);
+  //  Serial.print(", ");
+  //  Serial.print(imu.calcGyro(gyroY), 2);
+  //  Serial.print(", ");
+  //  Serial.print(imu.calcGyro(gyroZ), 2);
+  //  Serial.println(" deg/s");
+  //#elif defined PRINT_RAW
+  //  Serial.print(gyroX);
+  //  Serial.print(", ");
+  //  Serial.print(gyroY);
+  //  Serial.print(", ");
+  //  Serial.println(gyroZ);
+  //#endif
+
+  Serial.print(imu.calcGyro(imu.gx - offset_gx), 2);
   Serial.print(", ");
-  Serial.print(imu.calcGyro(imu.gy), 2);
+  Serial.print(imu.calcGyro(imu.gy - offset_gy), 2);
   Serial.print(", ");
-  Serial.print(imu.calcGyro(imu.gz), 2);
+  Serial.print(imu.calcGyro(imu.gz - offset_gz), 2);
   Serial.println(" deg/s");
 #elif defined PRINT_RAW
-  Serial.print(imu.gx);
+  Serial.print(imu.gx - offset_gx);
   Serial.print(", ");
-  Serial.print(imu.gy);
+  Serial.print(imu.gy - offset_gy);
   Serial.print(", ");
-  Serial.println(imu.gz);
+  Serial.println(imu.gz - offset_gz);
 #endif
 }
 
 void printAccel()
-{  
+{
   // Now we can use the ax, ay, and az variables as we please.
   // Either print them as raw ADC values, or calculated in g's.
   Serial.print("A: ");
@@ -37,7 +58,7 @@ void printAccel()
   Serial.print(", ");
   Serial.print(imu.calcAccel(imu.az), 2);
   Serial.println(" g");
-#elif defined PRINT_RAW 
+#elif defined PRINT_RAW
   Serial.print(imu.ax);
   Serial.print(", ");
   Serial.print(imu.ay);
@@ -48,7 +69,7 @@ void printAccel()
 }
 
 void printMag()
-{  
+{
   // Now we can use the mx, my, and mz variables as we please.
   // Either print them as raw ADC values, or calculated in Gauss.
   Serial.print("M: ");
