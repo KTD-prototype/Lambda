@@ -2,6 +2,7 @@ float sum_gx = 0;
 float sum_gy = 0;
 float sum_gz = 0;
 
+
 void init_gyro_process() {
   for (int i = 0; i < NUM_OF_SAMPLES_FOR_INIT; i++) {
     // wait for new data available

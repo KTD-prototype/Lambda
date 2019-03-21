@@ -55,7 +55,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <SparkFunLSM9DS1.h>
-#include <MadgwickAHRS.h>
+#include <TimerOne.h>
 
 //////////////////////////
 // LSM9DS1 Library Init //
@@ -63,7 +63,6 @@
 // Use the LSM9DS1 class to create an object. [imu] can be
 // named anything, we'll refer to that throught the sketch.
 LSM9DS1 imu;
-Madgwick filter;
 
 ///////////////////////
 // Example I2C Setup //
@@ -77,7 +76,6 @@ Madgwick filter;
 ////////////////////////////
 #define PRINT_CALCULATED
 //#define PRINT_RAW
-#define PRINT_SPEED 25 // 25 ms between prints
 static unsigned long lastPrint = 0; // Keep track of print time
 
 // Earth's magnetic field varies by location. Add or subtract
@@ -90,11 +88,14 @@ static unsigned long lastPrint = 0; // Keep track of print time
 // if this flag == 1, then execute initial process to calibrate gyro offset
 // define the number of sample to get data to calibrate
 int init_flag = 1;
-float accelX, accelY, accelZ, gyroX, gyroY, gyroZ, magX, magY, magZ, roll, pitch, heading;
+volatile int interrupt_flag = 0;
+
 float offset_gx = 0;
 float offset_gy = 0;
 float offset_gz = 0;
-#define NUM_OF_SAMPLES_FOR_INIT 500
+
+#define NUM_OF_SAMPLES_FOR_INIT 300
+#define SAMPLING_RATE 100
 
 void setup()
 {
@@ -127,7 +128,9 @@ void setup()
     while (1)
       ;
   }
-  filter.begin(40);
+
+  Timer1.initialize(1000000 / SAMPLING_RATE); //interrupt per 10000 micro seconds(100 msec)
+  Timer1.attachInterrupt(interrupt_function);
 }
 
 void loop()
@@ -140,55 +143,16 @@ void loop()
     init_flag = 0;
   }
 
-
-  // Update the sensor values whenever new data is available
-  if ( imu.gyroAvailable() )
-  {
-    // To read from the gyroscope,  first call the
-    // readGyro() function. When it exits, it'll update the
-    // gx, gy, and gz variables with the most current data.
-    imu.readGyro();
+  if (interrupt_flag == 1) {
+    get_IMU_data();
+    get_posture();
+    print_posture();
+    //    print_accel();
+    interrupt_flag = 0;
   }
 
-  if ( imu.accelAvailable() )
-  {
-    // To read from the accelerometer, first call the
-    // readAccel() function. When it exits, it'll update the
-    // ax, ay, and az variables with the most current data.
-    imu.readAccel();
-  }
+}
 
-  if ( imu.magAvailable() )
-  {
-    // To read from the magnetometer, first call the
-    // readMag() function. When it exits, it'll update the
-    // mx, my, and mz variables with the most current data.
-    imu.readMag();
-  }
-
-  if ((lastPrint + PRINT_SPEED) < millis()) {
-    gyroX = imu.calcGyro(imu.gx - offset_gx);
-    gyroY = imu.calcGyro(imu.gy - offset_gy);
-    gyroZ = imu.calcGyro(imu.gz - offset_gz);
-    accelX = imu.calcAccel(imu.ax);
-    accelY = imu.calcAccel(imu.ay);
-    accelZ = imu.calcAccel(imu.az);
-    magX = imu.calcMag(imu.mx);
-    magY = imu.calcMag(imu.my);
-    magZ = imu.calcMag(imu.mz);
-    //    magX = imu.mx;
-    //    magY = imu.my;
-    //    magZ = imu.mz;
-
-    filter.update(gyroX, gyroY, gyroZ, accelX, accelY, accelZ, magX, magY, magZ);
-
-    roll = filter.getRoll();
-    pitch = filter.getPitch();
-    heading = filter.getYaw();
-
-    printPosture(roll, pitch, heading);
-
-    lastPrint = millis(); // Update lastPrint time
-    //    Serial.println(lastPrint);
-  }
+void interrupt_function() {
+  interrupt_flag = 1;
 }
