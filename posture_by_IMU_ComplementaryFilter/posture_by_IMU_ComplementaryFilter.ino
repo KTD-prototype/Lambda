@@ -86,15 +86,17 @@ static unsigned long lastPrint = 0; // Keep track of print time
 
 
 // if this flag == 1, then execute initial process to calibrate gyro offset
-// define the number of sample to get data to calibrate
-int init_flag = 1;
-volatile int interrupt_flag = 0;
+volatile int interrupt_flag = 1;
 
 float offset_gx = 0;
 float offset_gy = 0;
 float offset_gz = 0;
+int previous_time = 0;
+int present_time = 0;
+int passed_time = 0;
 
-#define NUM_OF_SAMPLES_FOR_INIT 300
+// define the number of sample to get data to calibrate and sampling rate
+#define NUM_OF_SAMPLES_FOR_INIT 500
 #define SAMPLING_RATE 100
 
 void setup()
@@ -129,28 +131,25 @@ void setup()
       ;
   }
 
-  Timer1.initialize(1000000 / SAMPLING_RATE); //interrupt per 10000 micro seconds(100 msec)
+  // initial process to subtract gyro offset from measured data
+  init_gyro_process();
+  Serial.println("finished initialization !");
+  Serial.println();
+
+  Timer1.initialize(1000000 / SAMPLING_RATE); //interrupt per 10000 micro seconds(10 msec)
   Timer1.attachInterrupt(interrupt_function);
 }
 
-void loop()
-{
-  // initial process to subtract gyro offset from measured data
-  if (init_flag == 1) {
-    init_gyro_process();
-    Serial.println("finished initialization !");
-    Serial.println();
-    init_flag = 0;
-  }
-
+void loop() {
   if (interrupt_flag == 1) {
     get_IMU_data();
     get_posture();
-    print_posture();
+    //    print_posture();
+    print_gyro();
     //    print_accel();
+    //    print_time();
     interrupt_flag = 0;
   }
-
 }
 
 void interrupt_function() {

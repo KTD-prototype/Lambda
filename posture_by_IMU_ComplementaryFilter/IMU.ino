@@ -24,7 +24,7 @@ void get_posture() {
   //  }
   k = 0.1 * pow(65536, -1 * (pow((1 - g), 2) / C));
   ACCroll = 0.9 * ACCroll + 0.1 * (atan2(accelY,  accelZ) * 180 / M_PI);
-  ACCpitch = 0.9 * ACCroll + 0.1 * (atan2(accelX, sqrt(pow(accelY, 2) + pow(accelZ, 2))) * 180 / M_PI);
+  ACCpitch = 0.9 * ACCpitch + 0.1 * (atan2(accelX, sqrt(pow(accelY, 2) + pow(accelZ, 2))) * 180 / M_PI);
 
   //calculate pitch/roll/yaw by gyrosensor (About pitch & roll, using Complementary Filter)
   //(とりあえずピッチのみ）角速度を相補フィルタリング後の値から再計算する。
@@ -61,5 +61,13 @@ void print_accel() {
   Serial.print(accelY);
   Serial.print(",");
   Serial.println(accelZ);
-  Serial.println(k);
+  //  Serial.println(k);
+}
+
+void print_gyro(){
+  Serial.print(gyroX);
+  Serial.print(",");
+  Serial.print(gyroY);
+  Serial.print(",");
+  Serial.println(gyroZ);
 }
