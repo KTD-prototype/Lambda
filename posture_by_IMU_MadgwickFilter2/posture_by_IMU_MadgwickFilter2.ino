@@ -54,6 +54,7 @@
 // included BEFORE including the 9DS1 library.
 #include <Wire.h>
 #include <SPI.h>
+#include <MadgwickAHRS.h>
 #include <SparkFunLSM9DS1.h>
 #include <TimerOne.h>
 
@@ -62,6 +63,7 @@
 //////////////////////////
 // Use the LSM9DS1 class to create an object. [imu] can be
 // named anything, we'll refer to that throught the sketch.
+Madgwick filter;
 LSM9DS1 imu;
 
 ///////////////////////
@@ -103,7 +105,7 @@ void setup()
 {
 
   Serial.begin(115200);
-
+  filter.begin(SAMPLING_RATE);
   // Before initializing the IMU, there are a few settings
   // we may need to adjust. Use the settings struct to set
   // the device's communication mode and addresses:
@@ -143,9 +145,10 @@ void setup()
 void loop() {
   if (interrupt_flag == 1) {
     get_IMU_data();
-    get_posture_complementary_filter();
-    //    print_posture();
-    print_gyro();
+    //    get_posture_complementary_filter();
+    get_posture_madgwick_filter();
+    print_posture();
+    //    print_gyro();
     //    print_accel();
     //    print_time();
     interrupt_flag = 0;

@@ -16,6 +16,14 @@ void get_IMU_data() {
   magZ = imu.calcMag(imu.mz);
 }
 
+void get_posture_madgwick_filter() {
+  filter.updateIMU(gyroX, gyroY, gyroZ, accelX, accelY, accelZ);
+  //  filter.update(gyroX, gyroY, gyroZ, accelX, accelY, accelZ, magX, magY, magZ);
+  roll = filter.getRoll();
+  pitch = filter.getPitch();
+  heading = filter.getYaw();
+}
+
 void get_posture_complementary_filter() {
   g = sqrt(pow(accelX, 2) + pow(accelY, 2) + pow(accelZ, 2));
   //  k = 0.05 - (g - 1) / 100;
