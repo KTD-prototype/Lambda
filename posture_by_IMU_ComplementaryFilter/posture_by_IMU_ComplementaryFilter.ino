@@ -143,9 +143,10 @@ void setup()
 void loop() {
   if (interrupt_flag == 1) {
     get_IMU_data();
+    //    normarize_gyroZ();
     get_posture_complementary_filter();
-    //    print_posture();
-    print_gyro();
+    print_posture();
+    //    print_gyro();
     //    print_accel();
     //    print_time();
     interrupt_flag = 0;

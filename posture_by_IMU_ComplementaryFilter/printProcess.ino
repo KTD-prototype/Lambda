@@ -29,5 +29,5 @@ void print_gyro() {
   Serial.print(",");
   Serial.print(gyroY);
   Serial.print(",");
-  Serial.println(gyroZ);
+  Serial.println(gyroZ, 4);
 }
