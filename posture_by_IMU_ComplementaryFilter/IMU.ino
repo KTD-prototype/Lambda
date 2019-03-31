@@ -37,7 +37,7 @@ void get_posture_complementary_filter() {
   roll = (1 - k) * (roll + gyroX  / SAMPLING_RATE) + k * ACCroll;
   pitch = (1 - k) * (pitch + (-1 * gyroY) / SAMPLING_RATE) + k * ACCpitch; //ピッチの角速度データが正負逆で入っているようだ。
 
-  if (abs(gyroZ) < 0) {
+  if (abs(gyroZ) < 0.01) {
     heading = heading;
   }
   else heading = heading + gyroZ / SAMPLING_RATE;
