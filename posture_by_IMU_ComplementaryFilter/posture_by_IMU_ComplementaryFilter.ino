@@ -76,7 +76,6 @@ LSM9DS1 imu;
 ////////////////////////////
 #define PRINT_CALCULATED
 //#define PRINT_RAW
-static unsigned long lastPrint = 0; // Keep track of print time
 
 // Earth's magnetic field varies by location. Add or subtract
 // a declination to get a more accurate heading. Calculate
