@@ -8,23 +8,30 @@ ser = serial.Serial('/dev/Lambda', 115200)
 time.sleep(0.1)
 
 while True:
+    # ser.reset_input_buffer()
+
+    ser.write(chr(1))
+    while True:
+        if ser.inWaiting() > 11:
+            break
+
     a = ser.readline()
-    # a = a.decode('utf-8')
-    # a = float(a)
+    a = a.replace('\r\n', '')
+    a = float(a)
 
     b = ser.readline()
-    # b = b.decode('utf-8')
-    # b = float(b)
+    b = b.replace('\r\n', '')
+    b = float(b)
 
     c = ser.readline()
-    # c = c.decode('utf-8')
-    # c = float(c)
+    c = c.replace('\r\n', '')
+    c = float(c)
 
-    # a = a * 2
+
 
     print(a)
     print(b)
     print(c)
-    print(type(a))
+    print("")
     # print(b)
     # print(c)

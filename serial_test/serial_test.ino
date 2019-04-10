@@ -12,6 +12,7 @@ float a, b, c;
 int previous_time = 0;
 int present_time = 0;
 int passed_time = 0;
+float count = 0.00;
 
 void setup() {
   Serial.begin(115200);
@@ -26,11 +27,23 @@ void setup() {
 void loop() {
   if (interrupt_flag == 1) {
     //    print_time();
+
+    count++;
+    a = count;
+    b = count + 1.01;
+    c = count + 2.02;
+    //    Serial.println();
+    interrupt_flag = 0;
+  }
+
+  if (Serial.available() > 0) {
+    while (Serial.available() > 0) {
+      Serial.read();
+      //      Serial.println("read");
+    }
     Serial.println(a);
     Serial.println(b);
     Serial.println(c);
-    //    Serial.println();
-    interrupt_flag = 0;
   }
 }
 
