@@ -23,10 +23,12 @@ float offset_gz = 0;
 
 float accelX, accelY, accelZ, gyroX, gyroY, gyroZ, magX, magY, magZ, roll, pitch, heading, ACCroll, ACCpitch;
 
+byte read_data;
+
 
 
 void setup() {
-  Serial.begin(230400);
+  Serial.begin(115200);
 
   imu.settings.device.commInterface = IMU_MODE_I2C;
   imu.settings.device.mAddress = LSM9DS1_M;
@@ -49,7 +51,7 @@ void setup() {
   }
 
   // initial process to subtract gyro offset from measured data
-  init_gyro_process();
+  //  init_gyro_process();
   //  Serial.println("finished initialization !");
   //  Serial.println();
 
@@ -65,16 +67,8 @@ void loop() {
   }
 
   if (Serial.available() > 0) {
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
-    Serial.println(roll);
-    Serial.println(pitch);
-    Serial.println(heading);
-    Serial.println(gyroX);
-    Serial.println(gyroY);
-    Serial.println(gyroZ);
-    print_time();
+    read_data = Serial.read();
+    Serial.println(read_data);
   }
 }
 
